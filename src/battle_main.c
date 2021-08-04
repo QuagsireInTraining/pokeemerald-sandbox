@@ -17,6 +17,7 @@
 #include "bg.h"
 #include "data.h"
 #include "decompress.h"
+#include "dexnav.h"
 #include "dma3.h"
 #include "event_data.h"
 #include "evolution_scene.h"
@@ -1828,10 +1829,10 @@ static u8 CreateNPCTrainerParty(struct Pokemon *party, u16 trainerNum, bool8 fir
 
             if (gTrainers[trainerNum].doubleBattle == TRUE)
                 personalityValue = 0x80;
-            else if (gTrainers[trainerNum].encounterMusic_gender & 0x80)
-                personalityValue = 0x78;
+            else if (gTrainers[trainerNum].encounterMusic_gender & F_TRAINER_FEMALE)
+                personalityValue = 0x78; // Use personality more likely to result in a female Pokémon
             else
-                personalityValue = 0x88;
+                personalityValue = 0x88; // Use personality more likely to result in a male Pokémon
 
             for (j = 0; gTrainers[trainerNum].trainerName[j] != EOS; j++)
                 nameHash += gTrainers[trainerNum].trainerName[j];
@@ -4886,8 +4887,11 @@ static void FreeResetData_ReturnToOvOrDoEvolutions(void)
 {
     if (!gPaletteFade.active)
     {
-        gIsFishingEncounter = FALSE;
-        gIsSurfingEncounter = FALSE;
+        if (gDexnavBattle && (gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT))
+            IncrementDexNavChain();
+        else
+            gSaveBlock1Ptr->dexNavChain = 0;
+        
         ResetSpriteData();
         if (gLeveledUpInBattle && (gBattleOutcome == B_OUTCOME_WON || gBattleOutcome == B_OUTCOME_CAUGHT))
         {

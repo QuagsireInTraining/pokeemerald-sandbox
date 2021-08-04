@@ -142,18 +142,14 @@ struct MapHeader
     /* 0x16 */ u8 weather;
     /* 0x17 */ u8 mapType;
     /* 0x18 */ u8 filler_18[2];
-    /* 0x1A */ u8 flags;
+               // fields correspond to the arguments in the map_header_flags macro
+    /* 0x1A */ bool8 allowCycling:1;
+               bool8 allowEscaping:1; // Escape Rope and Dig
+               bool8 allowRunning:1;
+               bool8 showMapName:5; // the last 4 bits are unused 
+                                    // but the 5 bit sized bitfield is required to match
     /* 0x1B */ u8 battleType;
 };
-
-// Flags for gMapHeader.flags, as defined in the map_header_flags macro
-#define MAP_ALLOW_CYCLING      (1 << 0)
-#define MAP_ALLOW_ESCAPING     (1 << 1) // Escape Rope and Dig
-#define MAP_ALLOW_RUNNING      (1 << 2)
-#define MAP_SHOW_MAP_NAME      (1 << 3)
-#define UNUSED_MAP_FLAGS       (1 << 4 | 1 << 5 | 1 << 6 | 1 << 7)
-
-#define SHOW_MAP_NAME_ENABLED  ((gMapHeader.flags & (MAP_SHOW_MAP_NAME | UNUSED_MAP_FLAGS)) == MAP_SHOW_MAP_NAME)
 
 
 struct ObjectEvent
@@ -254,6 +250,8 @@ enum {
 #define PLAYER_AVATAR_FLAG_FORCED_MOVE (1 << 6)
 #define PLAYER_AVATAR_FLAG_DASH        (1 << 7)
 
+#define PLAYER_AVATAR_FLAG_BIKE        (PLAYER_AVATAR_FLAG_MACH_BIKE | PLAYER_AVATAR_FLAG_ACRO_BIKE)
+
 enum
 {
     ACRO_BIKE_NORMAL,
@@ -306,7 +304,8 @@ struct PlayerAvatar
     /*0x02*/ u8 runningState; // this is a static running state. 00 is not moving, 01 is turn direction, 02 is moving.
     /*0x03*/ u8 tileTransitionState; // this is a transition running state: 00 is not moving, 01 is transition between tiles, 02 means you are on the frame in which you have centered on a tile but are about to keep moving, even if changing directions. 2 is also used for a ledge hop, since you are transitioning.
     /*0x04*/ u8 spriteId;
-    /*0x05*/ u8 objectEventId;
+    /*0x05*/ u8 objectEventId:7;
+             u8 creeping:1;
     /*0x06*/ bool8 preventStep;
     /*0x07*/ u8 gender;
     /*0x08*/ u8 acroBikeState; // 00 is normal, 01 is turning, 02 is standing wheelie, 03 is hopping wheelie
